@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
-
 import ru.practicum.client.BaseClient;
 import ru.practicum.dto.CreateEndpointHitDto;
 import ru.practicum.dto.ViewStats;
@@ -31,6 +30,7 @@ public class StatisticClient extends BaseClient {
                 .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                 .build());
     }
+
     public Long getViews(Long eventId) {
         String url = "/stats?start={start}&end={end}&uris={uris}&unique={unique}";
         Map<String, Object> parameters = Map.of(
@@ -43,6 +43,7 @@ public class StatisticClient extends BaseClient {
         List<ViewStats> viewStatsList = response.hasBody() ? response.getBody() : null;
         return viewStatsList != null && !viewStatsList.isEmpty() ? viewStatsList.get(0).getHits() : 0L;
     }
+
     public void postStats(HttpServletRequest servlet, String app) {
         CreateEndpointHitDto hit = CreateEndpointHitDto
                 .builder()

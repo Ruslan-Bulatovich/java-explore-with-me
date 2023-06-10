@@ -26,8 +26,8 @@ public class BaseClient {
         HttpEntity<Object> requestEntity = new HttpEntity<>(null, defaultHeaders());
         ResponseEntity<List<ViewStats>> statsServerResponse;
         try {
-                statsServerResponse = rest.exchange(path, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {
-                }, parameters);
+            statsServerResponse = rest.exchange(path, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {
+            }, parameters);
         } catch (HttpStatusCodeException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
         }
@@ -49,6 +49,7 @@ public class BaseClient {
         }
         return prepareEventClientResponse(statsServerResponse);
     }
+
     private ResponseEntity<Object> prepareEventClientResponse(ResponseEntity<Object> response) {
         if (response.getStatusCode().is2xxSuccessful()) {
             return response;

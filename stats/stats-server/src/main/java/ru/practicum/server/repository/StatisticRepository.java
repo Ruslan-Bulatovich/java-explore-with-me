@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 import ru.practicum.dto.ViewStats;
 import ru.practicum.server.model.EndpointHit;
 
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -45,6 +44,6 @@ public interface StatisticRepository extends JpaRepository<EndpointHit, Long> {
             "GROUP BY vs.app, vs.uri " +
             "ORDER BY COUNT(DISTINCT vs.ip) DESC")
     List<ViewStats> getUniqueUrisViewStatsByStartAndEndTime(@Param("start") LocalDateTime start,
-                                                      @Param("end") LocalDateTime end,
-                                                      @Param("uris") List<String> uris);
+                                                            @Param("end") LocalDateTime end,
+                                                            @Param("uris") List<String> uris);
 }

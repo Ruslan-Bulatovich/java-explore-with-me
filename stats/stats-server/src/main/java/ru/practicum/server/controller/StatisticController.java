@@ -11,7 +11,6 @@ import ru.practicum.dto.ListViewStats;
 import ru.practicum.dto.ResponseEndpointHitDto;
 import ru.practicum.server.service.StatisticService;
 
-
 import java.util.List;
 
 @RestController
@@ -27,6 +26,7 @@ public class StatisticController {
                                                   @RequestParam(defaultValue = "false") Boolean unique) {
         return ResponseEntity.status(HttpStatus.OK).body(statisticService.getStats(start, end, uris, unique));
     }
+
     @PostMapping("/hit")
     public ResponseEntity<ResponseEndpointHitDto> addEndpointHit(@RequestBody CreateEndpointHitDto endpointHitDto) {
         log.info("addEndpointHit: {}", endpointHitDto);
