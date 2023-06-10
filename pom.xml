@@ -19,7 +19,7 @@
 
 	<modules>
 		<!--		<module>stat_svc</module>-->
-		<module>stats_svc</module>
+		<module>stat_svc</module>
 		<module>main_svc</module>
 	</modules>
 
