@@ -34,6 +34,21 @@ public class BaseClient {
         return prepareEventClientResponse2(statsServerResponse);
     }
 
+    private <T> ResponseEntity<Object> makeAndSendRequest(
+            HttpMethod method, String path, @Nullable Map<String, Object> parameters, @Nullable T body) {
+        HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders());
+        ResponseEntity<Object> statsServerResponse;
+        try {
+            if (parameters != null) {
+                statsServerResponse = rest.exchange(path, method, requestEntity, Object.class, parameters);
+            } else {
+                statsServerResponse = rest.exchange(path, method, requestEntity, Object.class);
+            }
+        } catch (HttpStatusCodeException ex) {
+            return ResponseEntity.status(ex.getStatusCode()).body(ex.getResponseBodyAsByteArray());
+        }
+        return prepareEventClientResponse(statsServerResponse);
+    }
     private ResponseEntity<Object> prepareEventClientResponse(ResponseEntity<Object> response) {
         if (response.getStatusCode().is2xxSuccessful()) {
             return response;
@@ -56,21 +71,6 @@ public class BaseClient {
         return bodyBuilder.build();
     }
 
-    private <T> ResponseEntity<Object> makeAndSendRequest(
-            HttpMethod method, String path, @Nullable Map<String, Object> parameters, @Nullable T body) {
-        HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders());
-        ResponseEntity<Object> statsServerResponse;
-        try {
-            if (parameters != null) {
-                statsServerResponse = rest.exchange(path, method, requestEntity, Object.class, parameters);
-            } else {
-                statsServerResponse = rest.exchange(path, method, requestEntity, Object.class);
-            }
-        } catch (HttpStatusCodeException ex) {
-            return ResponseEntity.status(ex.getStatusCode()).body(ex.getResponseBodyAsByteArray());
-        }
-        return prepareEventClientResponse(statsServerResponse);
-    }
 
     private HttpHeaders defaultHeaders() {
         HttpHeaders headers = new HttpHeaders();

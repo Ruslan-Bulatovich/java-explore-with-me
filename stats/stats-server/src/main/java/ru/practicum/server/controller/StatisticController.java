@@ -20,12 +20,6 @@ import java.util.List;
 public class StatisticController {
     private final StatisticService statisticService;
 
-    @PostMapping("/hit")
-    public ResponseEntity<ResponseEndpointHitDto> addEndpointHit(@RequestBody CreateEndpointHitDto endpointHitDto) {
-        log.info("addEndpointHit: {}", endpointHitDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(statisticService.addEndpointHit(endpointHitDto));
-    }
-
     @GetMapping("/stats")
     public ResponseEntity<ListViewStats> getStats(@RequestParam String start,
                                                   @RequestParam String end,
@@ -33,4 +27,11 @@ public class StatisticController {
                                                   @RequestParam(defaultValue = "false") Boolean unique) {
         return ResponseEntity.status(HttpStatus.OK).body(statisticService.getStats(start, end, uris, unique));
     }
+    @PostMapping("/hit")
+    public ResponseEntity<ResponseEndpointHitDto> addEndpointHit(@RequestBody CreateEndpointHitDto endpointHitDto) {
+        log.info("addEndpointHit: {}", endpointHitDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(statisticService.addEndpointHit(endpointHitDto));
+    }
+
+
 }

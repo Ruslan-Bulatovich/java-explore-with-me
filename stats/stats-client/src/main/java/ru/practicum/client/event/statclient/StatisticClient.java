@@ -31,18 +31,6 @@ public class StatisticClient extends BaseClient {
                 .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                 .build());
     }
-
-    public void postStats(HttpServletRequest servlet, String app) {
-        CreateEndpointHitDto hit = CreateEndpointHitDto
-                .builder()
-                .app(app)
-                .ip(servlet.getRemoteAddr())
-                .uri(servlet.getRequestURI())
-                .timestamp(LocalDateTime.now().format(formatter))
-                .build();
-        post("/hit", hit);
-    }
-
     public Long getViews(Long eventId) {
         String url = "/stats?start={start}&end={end}&uris={uris}&unique={unique}";
         Map<String, Object> parameters = Map.of(
@@ -55,4 +43,16 @@ public class StatisticClient extends BaseClient {
         List<ViewStats> viewStatsList = response.hasBody() ? response.getBody() : null;
         return viewStatsList != null && !viewStatsList.isEmpty() ? viewStatsList.get(0).getHits() : 0L;
     }
+    public void postStats(HttpServletRequest servlet, String app) {
+        CreateEndpointHitDto hit = CreateEndpointHitDto
+                .builder()
+                .app(app)
+                .ip(servlet.getRemoteAddr())
+                .uri(servlet.getRequestURI())
+                .timestamp(LocalDateTime.now().format(formatter))
+                .build();
+        post("/hit", hit);
+    }
+
+
 }

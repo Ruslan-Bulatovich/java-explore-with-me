@@ -11,8 +11,9 @@ import ru.practicum.server.model.EndpointHit;
 public interface StatisticMapper {
 
     @Mapping(source = "timestamp", target = "timestamp", dateFormat = "yyyy-MM-dd HH:mm:ss")
+    ResponseEndpointHitDto mapToResponseEndpointHitDto(EndpointHit endpointHit);
+    @Mapping(source = "timestamp", target = "timestamp", dateFormat = "yyyy-MM-dd HH:mm:ss")
     EndpointHit mapToEndpointHit(CreateEndpointHitDto createEndpointHitDto);
 
-    @Mapping(source = "timestamp", target = "timestamp", dateFormat = "yyyy-MM-dd HH:mm:ss")
-    ResponseEndpointHitDto mapToResponseEndpointHitDto(EndpointHit endpointHit);
+
 }
