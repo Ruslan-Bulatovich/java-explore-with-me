@@ -12,7 +12,6 @@ import ru.practicum.client.BaseClient;
 import ru.practicum.dto.CreateEndpointHitDto;
 import ru.practicum.dto.ViewStats;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -44,12 +43,12 @@ public class StatisticClient extends BaseClient {
         return viewStatsList != null && !viewStatsList.isEmpty() ? viewStatsList.get(0).getHits() : 0L;
     }
 
-    public void postStats(HttpServletRequest servlet, String app) {
+    public void postStats(String ip, String uri, String app) {
         CreateEndpointHitDto hit = CreateEndpointHitDto
                 .builder()
                 .app(app)
-                .ip(servlet.getRemoteAddr())
-                .uri(servlet.getRequestURI())
+                .ip(ip)
+                .uri(uri)
                 .timestamp(LocalDateTime.now().format(formatter))
                 .build();
         post("/hit", hit);
