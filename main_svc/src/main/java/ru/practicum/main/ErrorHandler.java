@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import ru.practicum.main.constants.Pattern;
 import ru.practicum.main.exceptions.*;
 import ru.practicum.main.models.ApiError;
-import ru.practicum.main.constants.Pattern;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -23,6 +23,14 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
     public ApiError handleUserNameAlreadyExistException(final NameAlreadyExistException exception) {
+        return new ApiError(exception.getMessage(), "Integrity constraint has been violated.",
+                HttpStatus.CONFLICT.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseBody
+    public ApiError handleUserNameAlreadyExistException(final CommentConflictException exception) {
         return new ApiError(exception.getMessage(), "Integrity constraint has been violated.",
                 HttpStatus.CONFLICT.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
     }
@@ -92,7 +100,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public ApiError handleWrongTimeOfEventException(final WrongTimeException exception) {
         return new ApiError(exception.getMessage(), "For the requested operation the conditions are not met.",
@@ -159,6 +167,13 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiError handleCategoryNotExistException(final CategoryNotExistException exception) {
         return new ApiError("Can't delete category with this id", "Category with this id doesn't exist",
+                HttpStatus.NOT_FOUND.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiError handleCommentNotExistException(final CommentNotExistException exception) {
+        return new ApiError(exception.getMessage(), "Category with this id doesn't exist",
                 HttpStatus.NOT_FOUND.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
     }
 }

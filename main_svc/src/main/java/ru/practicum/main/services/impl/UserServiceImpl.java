@@ -35,8 +35,12 @@ public class UserServiceImpl implements UserService {
     public List<UserDto> getUsers(List<Long> ids, Integer from, Integer size) {
         log.debug("Received users");
         Pageable page = PageRequest.of(from / size, size);
-        return !ids.isEmpty() ? userMapper.toUserDtoList(userRepository.findAllById(ids))
-                : userMapper.toUserDtoList(userRepository.findAll(page).toList());
+        if (ids == null) {
+            return userMapper.toUserDtoList(userRepository.findAll(page).toList());
+        } else {
+            return userMapper.toUserDtoList(userRepository.findAllById(ids));
+
+        }
     }
 
     @Override

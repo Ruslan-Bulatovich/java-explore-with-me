@@ -4,8 +4,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.practicum.main.enums.EventState;
 import ru.practicum.main.constants.Pattern;
+import ru.practicum.main.enums.EventState;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

@@ -1,10 +1,6 @@
 package ru.practicum.main.services;
 
-import ru.practicum.main.dto.event.EventFullDto;
-import ru.practicum.main.dto.event.EventShortDto;
-import ru.practicum.main.dto.event.NewEventDto;
-import ru.practicum.main.dto.event.UpdateEventAdminDto;
-import ru.practicum.main.dto.event.UpdateEventUserDto;
+import ru.practicum.main.dto.event.*;
 import ru.practicum.main.enums.EventState;
 import ru.practicum.main.enums.SortValue;
 import ru.practicum.main.models.Event;

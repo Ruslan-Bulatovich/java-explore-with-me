@@ -11,7 +11,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/exploreWithMeStat?user=user&password=user
 
   stats-db:
-    image: postgres:14-alpine
+    image: postgres:15-alpine
     container_name: stats-db
     ports:
       - "6543:5432"
@@ -32,7 +32,7 @@ services:
       - STAT_SERVER_URL=http://ewm-stat:9090
 
   ewm-db:
-    image: postgres:14-alpine
+    image: postgres:15-alpine
     container_name: ewm-db
     ports:
       - "6542:5432"

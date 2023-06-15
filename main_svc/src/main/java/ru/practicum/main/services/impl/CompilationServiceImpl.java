@@ -42,7 +42,11 @@ public class CompilationServiceImpl implements CompilationService {
         List<Event> events = eventRepository.findAllByIdIn(newCompilationDto.getEvents());
         Compilation compilation = new Compilation();
         compilation.setEvents(new HashSet<>(events));
-        compilation.setPinned(newCompilationDto.getPinned());
+        if (newCompilationDto.getPinned() == null) {
+            compilation.setPinned(false);
+        } else {
+            compilation.setPinned(newCompilationDto.getPinned());
+        }
         compilation.setTitle(newCompilationDto.getTitle());
 
         Compilation savedCompilation = compilationRepository.save(compilation);

@@ -53,12 +53,15 @@ public class RequestServiceImpl implements RequestService {
         if (!event.getRequestModeration() && requests.size() >= event.getParticipantLimit()) {
             throw new ParticipantLimitException("Member limit exceeded ");
         }
-
         Request request = new Request();
         request.setCreated(LocalDateTime.now());
         request.setEvent(eventId);
         request.setRequester(userId);
-        request.setStatus(RequestStatus.PENDING);
+        if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
+            request.setStatus(RequestStatus.CONFIRMED);
+        } else {
+            request.setStatus(RequestStatus.PENDING);
+        }
         return requestMapper.toRequestDto(requestRepository.save(request));
     }
 

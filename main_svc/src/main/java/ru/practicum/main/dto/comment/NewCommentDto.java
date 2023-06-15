@@ -1,6 +1,5 @@
-package ru.practicum.main.dto.category;
+package ru.practicum.main.dto.comment;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,10 +9,9 @@ import javax.validation.constraints.Size;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class NewCategoryDto {
+public class NewCommentDto {
     @NotBlank
-    @Size(max = 50)
-    private String name;
+    @Size(min = 20)
+    private String text;
 }

@@ -5,14 +5,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.client.StatClient;
-import ru.practicum.main.constants.Pattern;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
-import ru.practicum.main.dto.event.EventFullDto;
-import ru.practicum.main.dto.event.EventShortDto;
-import ru.practicum.main.dto.event.NewEventDto;
-import ru.practicum.main.dto.event.UpdateEventAdminDto;
-import ru.practicum.main.dto.event.UpdateEventUserDto;
+import ru.practicum.main.constants.Pattern;
+import ru.practicum.main.dto.event.*;
 import ru.practicum.main.enums.EventState;
 import ru.practicum.main.enums.SortValue;
 import ru.practicum.main.enums.StateActionForAdmin;
@@ -250,7 +246,7 @@ public class EventServiceImpl implements EventService {
                                                         String rangeEnd, Boolean onlyAvailable, SortValue sort, Integer from, Integer size, HttpServletRequest request) {
         LocalDateTime start = rangeStart != null ? LocalDateTime.parse(rangeStart, dateFormatter) : null;
         LocalDateTime end = rangeEnd != null ? LocalDateTime.parse(rangeEnd, dateFormatter) : null;
-
+        checkDateTime(start, end);
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Event> query = builder.createQuery(Event.class);
 
@@ -411,6 +407,18 @@ public class EventServiceImpl implements EventService {
             event.setViews(stats.get(0).getHits());
         } else {
             event.setViews(0L);
+        }
+    }
+
+    private void checkDateTime(LocalDateTime start, LocalDateTime end) {
+        if (start == null) {
+            start = LocalDateTime.now().minusYears(100);
+        }
+        if (end == null) {
+            end = LocalDateTime.now();
+        }
+        if (start.isAfter(end)) {
+            throw new WrongTimeException("Некорректный запрос. Дата окончания события задана позже даты старта");
         }
     }
 
