@@ -7,6 +7,7 @@ import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.server.mappers.EndpointHitMapper;
 import ru.practicum.server.mappers.ViewStatsMapper;
+import ru.practicum.server.models.ViewStats;
 import ru.practicum.server.repositories.StatServerRepository;
 import ru.practicum.server.services.StatService;
 
@@ -30,7 +31,18 @@ public class StatServiceImpl implements StatService {
     @Override
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         log.debug("Received stats.");
-        return unique ? viewStatsMapper.toEntityList(statServerRepository.getStatsByUrisAndIp(start, end, uris))
-                : viewStatsMapper.toEntityList(statServerRepository.getStatsByUris(start, end, uris));
+        List<ViewStats> viewStats;
+        List<ViewStatsDto> response;
+        if (unique) {
+            viewStats = uris == null
+                    ? statServerRepository.getUniqueViewStatsByStartAndEndTime(start, end)
+                    : statServerRepository.getUniqueUrisViewStatsByStartAndEndTime(start, end, uris);
+        } else {
+            viewStats = uris == null ? statServerRepository.getViewStatsByStartAndEndTime(start, end)
+                    : statServerRepository.getUrisViewStatsByStartAndEndTime(start, end, uris);
+        }
+
+        response = viewStatsMapper.toEntityList(viewStats);
+        return response;
     }
 }
