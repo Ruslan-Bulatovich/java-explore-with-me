@@ -10,6 +10,7 @@ import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.exceptions.StatsException;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -41,13 +42,11 @@ public class StatClient {
         parameters.put("end", end);
         parameters.put("uris", uris);
         parameters.put("unique", unique);
-
         ResponseEntity<String> response = restTemplate.getForEntity(
                 serverUrl + "/stats?start={start}&end={end}&uris={uris}&unique={unique}",
                 String.class, parameters);
 
         ObjectMapper objectMapper = new ObjectMapper();
-
         try {
             return Arrays.asList(objectMapper.readValue(response.getBody(), ViewStatsDto[].class));
         } catch (JsonProcessingException exception) {
