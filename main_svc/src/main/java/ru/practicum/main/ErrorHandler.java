@@ -8,172 +8,146 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import ru.practicum.main.constants.Pattern;
 import ru.practicum.main.exceptions.*;
-import ru.practicum.main.models.ApiError;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @RestControllerAdvice
 public class ErrorHandler {
-    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(Pattern.DATE);
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
-    public ApiError handleUserNameAlreadyExistException(final NameAlreadyExistException exception) {
-        return new ApiError(exception.getMessage(), "Integrity constraint has been violated.",
-                HttpStatus.CONFLICT.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleUserNameAlreadyExistException(final NameAlreadyExistException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
-    public ApiError handleUserNameAlreadyExistException(final CommentConflictException exception) {
-        return new ApiError(exception.getMessage(), "Integrity constraint has been violated.",
-                HttpStatus.CONFLICT.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleUserNameAlreadyExistException(final CommentConflictException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
-    public ApiError handleRequestAlreadyExistException(final RequestAlreadyExistException exception) {
-        return new ApiError(exception.getMessage(), "Integrity constraint has been violated.",
-                HttpStatus.CONFLICT.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleRequestAlreadyExistException(final RequestAlreadyExistException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
-    public ApiError handleCategoryIsNotEmptyException(final CategoryIsNotEmptyException exception) {
-        return new ApiError(exception.getMessage(), "For the requested operation the conditions are not met.",
-                HttpStatus.CONFLICT.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleCategoryIsNotEmptyException(final CategoryIsNotEmptyException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
-    public ApiError handleEventIsNotPublishedException(final EventIsNotPublishedException exception) {
-        return new ApiError(exception.getMessage(), "For the requested operation the conditions are not met.",
-                HttpStatus.CONFLICT.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleEventIsNotPublishedException(final EventIsNotPublishedException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
-    public ApiError handleWrongUserException(final WrongUserException exception) {
-        return new ApiError(exception.getMessage(), "For the requested operation the conditions are not met.",
-                HttpStatus.CONFLICT.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleWrongUserException(final WrongUserException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
-    public ApiError handleAlreadyPublishedException(final AlreadyPublishedException exception) {
-        return new ApiError(exception.getMessage(), "For the requested operation the conditions are not met.",
-                HttpStatus.CONFLICT.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleAlreadyPublishedException(final AlreadyPublishedException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
-    public ApiError handleParticipantLimitException(final ParticipantLimitException exception) {
-        return new ApiError(exception.getMessage(), "For the requested operation the conditions are not met.",
-                HttpStatus.CONFLICT.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleParticipantLimitException(final ParticipantLimitException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
-    public ApiError handleEventAlreadyCanceledException(final EventAlreadyCanceledException exception) {
-        return new ApiError(exception.getMessage(), "For the requested operation the conditions are not met.",
-                HttpStatus.CONFLICT.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleEventAlreadyCanceledException(final EventAlreadyCanceledException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
-    public ApiError handleRequestAlreadyConfirmedException(final RequestAlreadyConfirmedException exception) {
-        return new ApiError(exception.getMessage(), "For the requested operation the conditions are not met.",
-                HttpStatus.CONFLICT.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleRequestAlreadyConfirmedException(final RequestAlreadyConfirmedException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    public ApiError handleWrongTimeOfEventException(final WrongTimeException exception) {
-        return new ApiError(exception.getMessage(), "For the requested operation the conditions are not met.",
-                HttpStatus.FORBIDDEN.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleWrongTimeOfEventException(final WrongTimeException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseBody
-    public ApiError handleMethodArgumentTypeMismatchException(final MethodArgumentTypeMismatchException exception) {
-        return new ApiError(exception.getMessage(), "Incorrectly made request.",
-                HttpStatus.BAD_REQUEST.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleMethodArgumentTypeMismatchException(final MethodArgumentTypeMismatchException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseBody
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleMethodArgumentNotValidException(final MethodArgumentNotValidException exception) {
-        return new ApiError(exception.getMessage(), "Incorrectly made request.",
-                HttpStatus.BAD_REQUEST.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody
-    public ApiError handleUserNotExistException(final UserNotExistException exception) {
-        return new ApiError("Can't delete user with this id", "User with this id doesn't exist",
-                HttpStatus.NOT_FOUND.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleUserNotExistException(final UserNotExistException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody
-    public ApiError handleEmptyResultDataAccessException(final EmptyResultDataAccessException exception) {
-        return new ApiError("It is impossible to do the operation", "data not found",
-                HttpStatus.NOT_FOUND.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleEmptyResultDataAccessException(final EmptyResultDataAccessException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody
-    public ApiError handleCompilationNotExistException(final CompilationNotExistException exception) {
-        return new ApiError("Can't delete user with this id", "User with this id doesn't exist",
-                HttpStatus.NOT_FOUND.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleCompilationNotExistException(final CompilationNotExistException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody
-    public ApiError handleRequestNotExistException(final RequestNotExistException exception) {
-        return new ApiError(exception.getMessage(), "Request with this id doesn't exist",
-                HttpStatus.NOT_FOUND.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleRequestNotExistException(final RequestNotExistException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody
-    public ApiError handleEventNotExistException(final EventNotExistException exception) {
-        return new ApiError(exception.getMessage(), "Event with this id doesn't exist",
-                HttpStatus.NOT_FOUND.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleEventNotExistException(final EventNotExistException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiError handleCategoryNotExistException(final CategoryNotExistException exception) {
-        return new ApiError("Can't delete category with this id", "Category with this id doesn't exist",
-                HttpStatus.NOT_FOUND.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleCategoryNotExistException(final CategoryNotExistException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiError handleCommentNotExistException(final CommentNotExistException exception) {
-        return new ApiError(exception.getMessage(), "Category with this id doesn't exist",
-                HttpStatus.NOT_FOUND.getReasonPhrase().toUpperCase(), LocalDateTime.now().format(dateFormatter));
+    public ErrorResponse handleCommentNotExistException(final CommentNotExistException exception) {
+        return new ErrorResponse(exception.getMessage());
     }
 }

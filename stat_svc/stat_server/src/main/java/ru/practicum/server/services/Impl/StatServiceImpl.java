@@ -5,12 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
+import ru.practicum.server.exceptions.model.WrongTimeException;
 import ru.practicum.server.mappers.EndpointHitMapper;
 import ru.practicum.server.mappers.ViewStatsMapper;
 import ru.practicum.server.models.ViewStats;
 import ru.practicum.server.repositories.StatServerRepository;
 import ru.practicum.server.services.StatService;
-import ru.practicum.server.exceptions.model.WrongTimeException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,7 +31,7 @@ public class StatServiceImpl implements StatService {
 
     @Override
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
-        checkDateTime(start,end);
+        checkDateTime(start, end);
         log.debug("Received stats.");
         List<ViewStats> viewStats;
         List<ViewStatsDto> response;
@@ -47,8 +47,9 @@ public class StatServiceImpl implements StatService {
         response = viewStatsMapper.toEntityList(viewStats);
         return response;
     }
-    private void checkDateTime(LocalDateTime start, LocalDateTime end){
-        if (start.isAfter(end)){
+
+    private void checkDateTime(LocalDateTime start, LocalDateTime end) {
+        if (start.isAfter(end)) {
             throw new WrongTimeException(String.format("Wrong date and time"));
         }
     }
