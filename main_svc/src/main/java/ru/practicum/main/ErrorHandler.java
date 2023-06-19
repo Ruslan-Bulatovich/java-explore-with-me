@@ -23,13 +23,6 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
-    public ErrorResponse handleUserNameAlreadyExistException(final CommentConflictException exception) {
-        return new ErrorResponse(exception.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    @ResponseBody
     public ErrorResponse handleRequestAlreadyExistException(final RequestAlreadyExistException exception) {
         return new ErrorResponse(exception.getMessage());
     }
@@ -142,12 +135,6 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleCategoryNotExistException(final CategoryNotExistException exception) {
-        return new ErrorResponse(exception.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleCommentNotExistException(final CommentNotExistException exception) {
         return new ErrorResponse(exception.getMessage());
     }
 }
