@@ -351,28 +351,6 @@ public class EventServiceImpl implements EventService {
         sendStatForEveryEvent(events, remoteAddr, LocalDateTime.now(), nameService);
     }
 
-    private void sendStatForTheEvent(Long eventId, String remoteAddr, LocalDateTime now,
-                                     String nameService) {
-        EndpointHitDto requestDto = new EndpointHitDto();
-        requestDto.setTimestamp(now.format(dateFormatter));
-        requestDto.setUri("/events/" + eventId);
-        requestDto.setApp(nameService);
-        requestDto.setIp(remoteAddr);
-        statClient.addStats(requestDto);
-    }
-
-    private void sendStatForEveryEvent(List<Event> events, String remoteAddr, LocalDateTime now,
-                                       String nameService) {
-        for (Event event : events) {
-            EndpointHitDto requestDto = new EndpointHitDto();
-            requestDto.setTimestamp(now.format(dateFormatter));
-            requestDto.setUri("/events/" + event.getId());
-            requestDto.setApp(nameService);
-            requestDto.setIp(remoteAddr);
-            statClient.addStats(requestDto);
-        }
-    }
-
     public void setView(List<Event> events) {
         LocalDateTime start = events.get(0).getCreatedOn();
         List<String> uris = new ArrayList<>();
@@ -423,5 +401,27 @@ public class EventServiceImpl implements EventService {
 
     private List<ViewStatsDto> getStats(String startTime, String endTime, List<String> uris) {
         return statClient.getStats(startTime, endTime, uris, false);
+    }
+
+    private void sendStatForTheEvent(Long eventId, String remoteAddr, LocalDateTime now,
+                                     String nameService) {
+        EndpointHitDto requestDto = new EndpointHitDto();
+        requestDto.setTimestamp(now.format(dateFormatter));
+        requestDto.setUri("/events/" + eventId);
+        requestDto.setApp(nameService);
+        requestDto.setIp(remoteAddr);
+        statClient.addStats(requestDto);
+    }
+
+    private void sendStatForEveryEvent(List<Event> events, String remoteAddr, LocalDateTime now,
+                                       String nameService) {
+        for (Event event : events) {
+            EndpointHitDto requestDto = new EndpointHitDto();
+            requestDto.setTimestamp(now.format(dateFormatter));
+            requestDto.setUri("/events/" + event.getId());
+            requestDto.setApp(nameService);
+            requestDto.setIp(remoteAddr);
+            statClient.addStats(requestDto);
+        }
     }
 }
