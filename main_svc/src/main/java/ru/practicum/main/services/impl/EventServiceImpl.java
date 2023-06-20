@@ -28,7 +28,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -242,7 +241,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventFullDto> getEventsWithParamsByUser(String text, List<Long> categories, Boolean paid, String rangeStart,
-                                                        String rangeEnd, Boolean onlyAvailable, SortValue sort, Integer from, Integer size, HttpServletRequest request) {
+                                                        String rangeEnd, Boolean onlyAvailable, SortValue sort, Integer from, Integer size, String ip, String uri) {
         LocalDateTime start = rangeStart != null ? LocalDateTime.parse(rangeStart, dateFormatter) : null;
         LocalDateTime end = rangeEnd != null ? LocalDateTime.parse(rangeEnd, dateFormatter) : null;
         checkDateTime(start, end);
@@ -309,23 +308,22 @@ public class EventServiceImpl implements EventService {
         if (events.size() == 0) {
             return new ArrayList<>();
         }
-
         setView(events);
-        sendStat(events, request);
+        sendStat(events, ip, uri);
         return eventMapper.toEventFullDtoList(events);
     }
 
     @Override
-    public EventFullDto getEvent(Long id, HttpServletRequest request) {
+    public EventFullDto getEvent(Long id, String ip, String uri) {
         Event event = eventRepository.findByIdAndPublishedOnIsNotNull(id).orElseThrow(() -> new EventNotExistException(String.format("Can't find event with id = %s event doesn't exist", id)));
         event.setViews(setView(event));
-        sendStat(event, request);
+        sendStat(event, ip, uri);
         return eventMapper.toEventFullDto(event);
     }
 
-    public void sendStat(Event event, HttpServletRequest request) {
+    public void sendStat(Event event, String ip, String uri) {
         LocalDateTime now = LocalDateTime.now();
-        String remoteAddr = request.getRemoteAddr();
+        String remoteAddr = ip;
         String nameService = "main-service";
 
         EndpointHitDto requestDto = new EndpointHitDto();
@@ -337,16 +335,16 @@ public class EventServiceImpl implements EventService {
         sendStatForTheEvent(event.getId(), remoteAddr, now, nameService);
     }
 
-    public void sendStat(List<Event> events, HttpServletRequest request) {
+    public void sendStat(List<Event> events, String ip, String uri) {
         LocalDateTime now = LocalDateTime.now();
-        String remoteAddr = request.getRemoteAddr();
+        String remoteAddr = ip;
         String nameService = "main-service";
 
         EndpointHitDto requestDto = new EndpointHitDto();
         requestDto.setTimestamp(now.format(dateFormatter));
         requestDto.setUri("/events");
         requestDto.setApp(nameService);
-        requestDto.setIp(request.getRemoteAddr());
+        requestDto.setIp(ip);
         statClient.addStats(requestDto);
         sendStatForEveryEvent(events, remoteAddr, LocalDateTime.now(), nameService);
     }
