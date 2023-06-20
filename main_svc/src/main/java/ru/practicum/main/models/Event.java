@@ -25,7 +25,6 @@ public class Event {
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Category category;
 
-    private int confirmedRequests;
     @Column(name = "created_On")
     private LocalDateTime createdOn;
     private String description;
@@ -44,16 +43,14 @@ public class Event {
     @Enumerated(EnumType.STRING)
     private EventState state;
     private String title;
-    private Long views;
     @Transient
     private final String datePattern = Pattern.DATE;
     @Transient
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(datePattern);
 
-    public Event(Long id, String annotation, Category category, int confirmedRequests, LocalDateTime createdOn, String description, LocalDateTime eventDate, User initiator, Location location, Boolean paid, Integer participantLimit, LocalDateTime publishedOn, Boolean requestModeration, EventState eventState, String title, Long views) {
+    public Event(Long id, String annotation, Category category, LocalDateTime createdOn, String description, LocalDateTime eventDate, User initiator, Location location, Boolean paid, Integer participantLimit, LocalDateTime publishedOn, Boolean requestModeration, EventState eventState, String title) {
         this.annotation = annotation;
         this.category = category;
-        this.confirmedRequests = confirmedRequests;
         if (createdOn == null) {
             this.createdOn = LocalDateTime.now();
         } else {
@@ -79,7 +76,6 @@ public class Event {
             this.state = eventState;
         }
         this.title = title;
-        this.views = views;
     }
 
 }

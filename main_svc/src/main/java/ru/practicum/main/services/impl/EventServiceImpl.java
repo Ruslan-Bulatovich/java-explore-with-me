@@ -9,10 +9,7 @@ import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.main.constants.Pattern;
 import ru.practicum.main.dto.event.*;
-import ru.practicum.main.enums.EventState;
-import ru.practicum.main.enums.SortValue;
-import ru.practicum.main.enums.StateActionForAdmin;
-import ru.practicum.main.enums.StateActionForUser;
+import ru.practicum.main.enums.*;
 import ru.practicum.main.exceptions.*;
 import ru.practicum.main.mappers.EventMapper;
 import ru.practicum.main.models.Category;
@@ -20,6 +17,7 @@ import ru.practicum.main.models.Event;
 import ru.practicum.main.models.User;
 import ru.practicum.main.repositories.CategoryRepository;
 import ru.practicum.main.repositories.EventRepository;
+import ru.practicum.main.repositories.RequestRepository;
 import ru.practicum.main.repositories.UserRepository;
 import ru.practicum.main.services.EventService;
 
@@ -28,7 +26,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -41,6 +38,7 @@ public class EventServiceImpl implements EventService {
     private final CategoryRepository categoryRepository;
     private final EventMapper eventMapper;
     private final UserRepository userRepository;
+    private final RequestRepository requestRepository;
     private final StatClient statClient;
     private final EntityManager entityManager;
     private final String datePattern = Pattern.DATE;
@@ -59,7 +57,8 @@ public class EventServiceImpl implements EventService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotExistException(String.format("Can't create event, the user with id = %s doesn't exist", userId)));
         event.setInitiator(user);
-        return eventMapper.toEventFullDto(eventRepository.save(event));
+        EventFullDto eventFullDto = setConfirmedRequest(event);
+        return eventFullDto;
     }
 
     @Override
@@ -125,8 +124,8 @@ public class EventServiceImpl implements EventService {
 
             event.setEventDate(updateEventAdminDto.getEventDate());
         }
-
-        return eventMapper.toEventFullDto(eventRepository.save(event));
+        EventFullDto eventFullDto = setConfirmedRequest(event);
+        return eventFullDto;
     }
 
     @Override
@@ -182,19 +181,21 @@ public class EventServiceImpl implements EventService {
                 event.setState(EventState.CANCELED);
             }
         }
-
-        return eventMapper.toEventFullDto(eventRepository.save(event));
+        EventFullDto eventFullDto = setConfirmedRequest(event);
+        return eventFullDto;
     }
 
     @Override
     public EventFullDto getEventByUser(Long userId, Long eventId) {
-        return eventMapper.toEventFullDto(eventRepository.findByIdAndInitiatorId(eventId, userId).orElseThrow(() -> new EventNotExistException("")));
+        Event event = eventRepository.findByIdAndInitiatorId(eventId, userId).orElseThrow(() -> new EventNotExistException(""));
+        EventFullDto eventFullDto = setConfirmedRequest(event);
+        return eventFullDto;
     }
 
     @Override
-    public List<EventFullDto> getEventsWithParamsByAdmin(List<Long> users, EventState states, List<Long> categoriesId, String rangeStart, String rangeEnd, Integer from, Integer size) {
-        LocalDateTime start = rangeStart != null ? LocalDateTime.parse(rangeStart, dateFormatter) : null;
-        LocalDateTime end = rangeEnd != null ? LocalDateTime.parse(rangeEnd, dateFormatter) : null;
+    public List<EventFullDto> getEventsWithParamsByAdmin(List<Long> users, EventState states, List<Long> categoriesId, LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size) {
+        LocalDateTime start = rangeStart != null ? rangeStart : null;
+        LocalDateTime end = rangeEnd != null ? rangeEnd : null;
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Event> query = builder.createQuery(Event.class);
@@ -235,14 +236,15 @@ public class EventServiceImpl implements EventService {
         if (events.size() == 0) {
             return new ArrayList<>();
         }
-
-        setView(events);
-        return eventMapper.toEventFullDtoList(events);
+        List<EventFullDto> eventFullDtoList;
+        eventFullDtoList = events.stream().map(this::setConfirmedRequest).collect(Collectors.toList());
+        setView(eventFullDtoList);
+        return eventFullDtoList;
     }
 
     @Override
     public List<EventFullDto> getEventsWithParamsByUser(String text, List<Long> categories, Boolean paid, String rangeStart,
-                                                        String rangeEnd, Boolean onlyAvailable, SortValue sort, Integer from, Integer size, HttpServletRequest request) {
+                                                        String rangeEnd, Boolean onlyAvailable, SortValue sort, Integer from, Integer size, String ip, String uri) {
         LocalDateTime start = rangeStart != null ? LocalDateTime.parse(rangeStart, dateFormatter) : null;
         LocalDateTime end = rangeEnd != null ? LocalDateTime.parse(rangeEnd, dateFormatter) : null;
         checkDateTime(start, end);
@@ -294,38 +296,37 @@ public class EventServiceImpl implements EventService {
 
         if (onlyAvailable) {
             events = events.stream()
-                    .filter((event -> event.getConfirmedRequests() < (long) event.getParticipantLimit()))
+                    .filter((event -> requestRepository.findRequestByEventAndStatus(event.getId(), RequestStatus.CONFIRMED).size() < (long) event.getParticipantLimit()))
                     .collect(Collectors.toList());
         }
 
         if (sort != null) {
             if (sort.equals(SortValue.EVENT_DATE)) {
                 events = events.stream().sorted(Comparator.comparing(Event::getEventDate)).collect(Collectors.toList());
-            } else {
-                events = events.stream().sorted(Comparator.comparing(Event::getViews)).collect(Collectors.toList());
             }
         }
 
         if (events.size() == 0) {
             return new ArrayList<>();
         }
-
-        setView(events);
-        sendStat(events, request);
+        List<EventFullDto> eventFullDto = eventMapper.toEventFullDtoList(events);
+        setView(eventFullDto);
+        sendStat(events, ip, uri);
         return eventMapper.toEventFullDtoList(events);
     }
 
     @Override
-    public EventFullDto getEvent(Long id, HttpServletRequest request) {
+    public EventFullDto getEvent(Long id, String ip, String uri) {
         Event event = eventRepository.findByIdAndPublishedOnIsNotNull(id).orElseThrow(() -> new EventNotExistException(String.format("Can't find event with id = %s event doesn't exist", id)));
-        event.setViews(setView(event));
-        sendStat(event, request);
-        return eventMapper.toEventFullDto(event);
+        EventFullDto eventFullDto = setConfirmedRequest(event);
+        sendStat(eventFullDto, ip, uri);
+        eventFullDto.setViews(setView(event));
+        return eventFullDto;
     }
 
-    public void sendStat(Event event, HttpServletRequest request) {
+    public void sendStat(EventFullDto event, String ip, String uri) {
         LocalDateTime now = LocalDateTime.now();
-        String remoteAddr = request.getRemoteAddr();
+        String remoteAddr = ip;
         String nameService = "main-service";
 
         EndpointHitDto requestDto = new EndpointHitDto();
@@ -337,18 +338,69 @@ public class EventServiceImpl implements EventService {
         sendStatForTheEvent(event.getId(), remoteAddr, now, nameService);
     }
 
-    public void sendStat(List<Event> events, HttpServletRequest request) {
+    public void sendStat(List<Event> events, String ip, String uri) {
         LocalDateTime now = LocalDateTime.now();
-        String remoteAddr = request.getRemoteAddr();
+        String remoteAddr = ip;
         String nameService = "main-service";
 
         EndpointHitDto requestDto = new EndpointHitDto();
         requestDto.setTimestamp(now.format(dateFormatter));
         requestDto.setUri("/events");
         requestDto.setApp(nameService);
-        requestDto.setIp(request.getRemoteAddr());
+        requestDto.setIp(ip);
         statClient.addStats(requestDto);
         sendStatForEveryEvent(events, remoteAddr, LocalDateTime.now(), nameService);
+    }
+
+    public void setView(List<EventFullDto> events) {
+        LocalDateTime start = LocalDateTime.parse(events.get(0).getCreatedOn());
+        List<String> uris = new ArrayList<>();
+        Map<String, EventFullDto> eventsUri = new HashMap<>();
+        String uri = "";
+        for (EventFullDto event : events) {
+            LocalDateTime createdOn = LocalDateTime.parse(events.get(0).getCreatedOn());
+            if (start.isBefore(createdOn)) {
+                start = createdOn;
+            }
+            uri = "/events/" + event.getId();
+            uris.add(uri);
+            eventsUri.put(uri, event);
+            event.setViews(0L);
+        }
+        String startTime = start.format(DateTimeFormatter.ofPattern(Pattern.DATE));
+        String endTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Pattern.DATE));
+        List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
+        stats.forEach((stat) ->
+                eventsUri.get(stat.getUri()).setViews(stat.getHits()));
+    }
+
+    public Long setView(Event event) {
+
+        String startTime = event.getCreatedOn().format(dateFormatter);
+        String endTime = LocalDateTime.now().format(dateFormatter);
+        List<String> uris = List.of("/events/" + event.getId());
+        List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
+        if (stats.size() == 1) {
+            return stats.get(0).getHits();
+        } else {
+            return 1L;
+        }
+    }
+
+    private void checkDateTime(LocalDateTime start, LocalDateTime end) {
+        if (start == null) {
+            start = LocalDateTime.now().minusYears(100);
+        }
+        if (end == null) {
+            end = LocalDateTime.now();
+        }
+        if (start.isAfter(end)) {
+            throw new WrongTimeException("Некорректный запрос. Дата окончания события задана позже даты старта");
+        }
+    }
+
+    private List<ViewStatsDto> getStats(String startTime, String endTime, List<String> uris) {
+        return statClient.getStats(startTime, endTime, uris, false);
     }
 
     private void sendStatForTheEvent(Long eventId, String remoteAddr, LocalDateTime now,
@@ -373,55 +425,10 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    public void setView(List<Event> events) {
-        LocalDateTime start = events.get(0).getCreatedOn();
-        List<String> uris = new ArrayList<>();
-        Map<String, Event> eventsUri = new HashMap<>();
-        String uri = "";
-        for (Event event : events) {
-            if (start.isBefore(event.getCreatedOn())) {
-                start = event.getCreatedOn();
-            }
-            uri = "/events/" + event.getId();
-            uris.add(uri);
-            eventsUri.put(uri, event);
-            event.setViews(0L);
-        }
-
-        String startTime = start.format(DateTimeFormatter.ofPattern(Pattern.DATE));
-        String endTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Pattern.DATE));
-
-        List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
-        stats.forEach((stat) ->
-                eventsUri.get(stat.getUri()).setViews(stat.getHits()));
-    }
-
-    public Long setView(Event event) {
-        String startTime = event.getCreatedOn().format(dateFormatter);
-        String endTime = LocalDateTime.now().format(dateFormatter);
-        List<String> uris = List.of("/events/" + event.getId());
-
-        List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
-        if (stats.size() == 1) {
-            return stats.get(0).getHits();
-        } else {
-            return 1L;
-        }
-    }
-
-    private void checkDateTime(LocalDateTime start, LocalDateTime end) {
-        if (start == null) {
-            start = LocalDateTime.now().minusYears(100);
-        }
-        if (end == null) {
-            end = LocalDateTime.now();
-        }
-        if (start.isAfter(end)) {
-            throw new WrongTimeException("Некорректный запрос. Дата окончания события задана позже даты старта");
-        }
-    }
-
-    private List<ViewStatsDto> getStats(String startTime, String endTime, List<String> uris) {
-        return statClient.getStats(startTime, endTime, uris, false);
+    private EventFullDto setConfirmedRequest(Event event) {
+        Integer confirmed = requestRepository.findRequestByEventAndStatus(event.getId(), RequestStatus.CONFIRMED).size();
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(event));
+        eventFullDto.setConfirmedRequests((long) confirmed);
+        return eventFullDto;
     }
 }
