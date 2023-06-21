@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.main.dto.request.RequestDto;
 import ru.practicum.main.dto.request.RequestStatusUpdateDto;
 import ru.practicum.main.dto.request.RequestStatusUpdateResult;
+import ru.practicum.main.enums.EventState;
 import ru.practicum.main.enums.RequestStatus;
 import ru.practicum.main.enums.RequestStatusToUpdate;
 import ru.practicum.main.exceptions.*;
@@ -44,7 +45,7 @@ public class RequestServiceImpl implements RequestService {
             throw new WrongUserException("Can't create request by initiator");
         }
 
-        if (event.getPublishedOn() == null) {
+        if (event.getState() == EventState.PENDING) {
             throw new EventIsNotPublishedException("Event is not published yet");
         }
 

@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +43,8 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto createCompilation(NewCompilationDto newCompilationDto) {
         List<Event> events = new ArrayList<>();
         if (newCompilationDto.getEvents() != null) {
-            events = eventRepository.findAllByIdIn(newCompilationDto.getEvents());
+            List<Long> eventsId = newCompilationDto.getEvents().stream().distinct().collect(Collectors.toList());
+            events = eventRepository.findAllByIdIn(eventsId);
         }
         Compilation compilation = new Compilation();
         compilation.setEvents(new HashSet<>(events));
