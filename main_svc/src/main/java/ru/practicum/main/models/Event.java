@@ -25,7 +25,7 @@ public class Event {
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Category category;
 
-    private int confirmedRequests;
+    private long confirmedRequests;
     @Column(name = "created_On")
     private LocalDateTime createdOn;
     private String description;
@@ -50,7 +50,7 @@ public class Event {
     @Transient
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(datePattern);
 
-    public Event(Long id, String annotation, Category category, int confirmedRequests, LocalDateTime createdOn, String description, LocalDateTime eventDate, User initiator, Location location, Boolean paid, Integer participantLimit, LocalDateTime publishedOn, Boolean requestModeration, EventState eventState, String title, Long views) {
+    public Event(Long id, String annotation, Category category, long confirmedRequests, LocalDateTime createdOn, String description, LocalDateTime eventDate, User initiator, Location location, Boolean paid, Integer participantLimit, LocalDateTime publishedOn, Boolean requestModeration, EventState eventState, String title, Long views) {
         this.annotation = annotation;
         this.category = category;
         this.confirmedRequests = confirmedRequests;
