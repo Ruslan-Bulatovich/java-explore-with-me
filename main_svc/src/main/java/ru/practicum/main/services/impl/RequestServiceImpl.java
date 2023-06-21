@@ -83,7 +83,7 @@ public class RequestServiceImpl implements RequestService {
             throw new RequestAlreadyConfirmedException("request already confirmed");
         }
 
-        if (event.getConfirmedRequests() + requestsToUpdate.size() > event.getParticipantLimit() && requestStatusUpdateDto.getStatus().equals(RequestStatusToUpdate.CONFIRMED)) {
+        if (getConfirmedRequests(event) + requestsToUpdate.size() > event.getParticipantLimit() && requestStatusUpdateDto.getStatus().equals(RequestStatusToUpdate.CONFIRMED)) {
             throw new ParticipantLimitException("exceeding the limit of participants");
         }
 
@@ -93,9 +93,6 @@ public class RequestServiceImpl implements RequestService {
 
         requestRepository.saveAll(requestsToUpdate);
 
-        if (requestStatusUpdateDto.getStatus().equals(RequestStatusToUpdate.CONFIRMED)) {
-            event.setConfirmedRequests(event.getConfirmedRequests() + requestsToUpdate.size());
-        }
 
         eventRepository.save(event);
 
@@ -121,5 +118,8 @@ public class RequestServiceImpl implements RequestService {
         Request request = requestRepository.findByRequesterAndId(userId, requestId).orElseThrow(() -> new RequestNotExistException(String.format("Request with id=%s was not found", requestId)));
         request.setStatus(RequestStatus.CANCELED);
         return requestMapper.toRequestDto(requestRepository.save(request));
+    }
+    private Integer getConfirmedRequests(Event event) {
+        return requestRepository.findRequestByEventAndStatus(event.getId(), "CONFIRMED").size();
     }
 }

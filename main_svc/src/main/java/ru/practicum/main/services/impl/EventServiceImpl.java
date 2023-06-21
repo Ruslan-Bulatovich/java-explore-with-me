@@ -20,6 +20,7 @@ import ru.practicum.main.models.Event;
 import ru.practicum.main.models.User;
 import ru.practicum.main.repositories.CategoryRepository;
 import ru.practicum.main.repositories.EventRepository;
+import ru.practicum.main.repositories.RequestRepository;
 import ru.practicum.main.repositories.UserRepository;
 import ru.practicum.main.services.EventService;
 
@@ -40,6 +41,7 @@ public class EventServiceImpl implements EventService {
     private final CategoryRepository categoryRepository;
     private final EventMapper eventMapper;
     private final UserRepository userRepository;
+    private final RequestRepository requestRepository;
     private final StatClient statClient;
     private final EntityManager entityManager;
     private final String datePattern = Pattern.DATE;
@@ -58,7 +60,8 @@ public class EventServiceImpl implements EventService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotExistException(String.format("Can't create event, the user with id = %s doesn't exist", userId)));
         event.setInitiator(user);
-        return eventMapper.toEventFullDto(eventRepository.save(event));
+        EventFullDto eventFullDto = getEventFullDto(event);
+        return eventFullDto;
     }
 
     @Override
@@ -124,8 +127,8 @@ public class EventServiceImpl implements EventService {
 
             event.setEventDate(updateEventAdminDto.getEventDate());
         }
-
-        return eventMapper.toEventFullDto(eventRepository.save(event));
+        EventFullDto eventFullDto = getEventFullDto(event);
+        return eventFullDto;
     }
 
     @Override
@@ -181,13 +184,15 @@ public class EventServiceImpl implements EventService {
                 event.setState(EventState.CANCELED);
             }
         }
-
-        return eventMapper.toEventFullDto(eventRepository.save(event));
+        EventFullDto eventFullDto = getEventFullDto(event);
+        return eventFullDto;
     }
 
     @Override
     public EventFullDto getEventByUser(Long userId, Long eventId) {
-        return eventMapper.toEventFullDto(eventRepository.findByIdAndInitiatorId(eventId, userId).orElseThrow(() -> new EventNotExistException("")));
+        Event event = eventRepository.findByIdAndInitiatorId(eventId, userId).orElseThrow(() -> new EventNotExistException(""));
+        EventFullDto eventFullDto = getEventFullDto(event);
+        return eventFullDto;
     }
 
     @Override
@@ -293,7 +298,7 @@ public class EventServiceImpl implements EventService {
 
         if (onlyAvailable) {
             events = events.stream()
-                    .filter((event -> event.getConfirmedRequests() < (long) event.getParticipantLimit()))
+                    .filter((event -> requestRepository.findRequestByEventAndStatus(event.getId(), "CONFIRMED").size() < (long) event.getParticipantLimit()))
                     .collect(Collectors.toList());
         }
 
@@ -308,6 +313,7 @@ public class EventServiceImpl implements EventService {
         if (events.size() == 0) {
             return new ArrayList<>();
         }
+        /// нужно вставить в окончательный лист количество потвержденных запросов
         setView(events);
         sendStat(events, ip, uri);
         return eventMapper.toEventFullDtoList(events);
@@ -318,7 +324,8 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findByIdAndPublishedOnIsNotNull(id).orElseThrow(() -> new EventNotExistException(String.format("Can't find event with id = %s event doesn't exist", id)));
         event.setViews(setView(event));
         sendStat(event, ip, uri);
-        return eventMapper.toEventFullDto(event);
+        EventFullDto eventFullDto = getEventFullDto(event);
+        return eventFullDto;
     }
 
     public void sendStat(Event event, String ip, String uri) {
@@ -421,5 +428,11 @@ public class EventServiceImpl implements EventService {
             requestDto.setIp(remoteAddr);
             statClient.addStats(requestDto);
         }
+    }
+    private EventFullDto getEventFullDto(Event event) {
+        Integer confirmed = requestRepository.findRequestByEventAndStatus(event.getId(), "CONFIRMED").size();
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(event));
+        eventFullDto.setConfirmedRequests((long) confirmed);
+        return eventFullDto;
     }
 }
