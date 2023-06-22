@@ -57,7 +57,7 @@ public class EventServiceImpl implements EventService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotExistException(String.format("Can't create event, the user with id = %s doesn't exist", userId)));
         event.setInitiator(user);
-        EventFullDto eventFullDto = getEventFullDto(event);
+        EventFullDto eventFullDto = setConfirmedRequest(event);
         return eventFullDto;
     }
 
@@ -124,7 +124,7 @@ public class EventServiceImpl implements EventService {
 
             event.setEventDate(updateEventAdminDto.getEventDate());
         }
-        EventFullDto eventFullDto = getEventFullDto(event);
+        EventFullDto eventFullDto = setConfirmedRequest(event);
         return eventFullDto;
     }
 
@@ -181,14 +181,14 @@ public class EventServiceImpl implements EventService {
                 event.setState(EventState.CANCELED);
             }
         }
-        EventFullDto eventFullDto = getEventFullDto(event);
+        EventFullDto eventFullDto = setConfirmedRequest(event);
         return eventFullDto;
     }
 
     @Override
     public EventFullDto getEventByUser(Long userId, Long eventId) {
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId).orElseThrow(() -> new EventNotExistException(""));
-        EventFullDto eventFullDto = getEventFullDto(event);
+        EventFullDto eventFullDto = setConfirmedRequest(event);
         return eventFullDto;
     }
 
@@ -236,9 +236,10 @@ public class EventServiceImpl implements EventService {
         if (events.size() == 0) {
             return new ArrayList<>();
         }
-
+        List<EventFullDto> eventFullDtoList;
+        eventFullDtoList = events.stream().map(this::setConfirmedRequest).collect(Collectors.toList());
         setView(events);
-        return eventMapper.toEventFullDtoList(events);
+        return eventFullDtoList;
     }
 
     @Override
@@ -321,7 +322,7 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findByIdAndPublishedOnIsNotNull(id).orElseThrow(() -> new EventNotExistException(String.format("Can't find event with id = %s event doesn't exist", id)));
         event.setViews(setView(event));
         sendStat(event, ip, uri);
-        EventFullDto eventFullDto = getEventFullDto(event);
+        EventFullDto eventFullDto = setConfirmedRequest(event);
         return eventFullDto;
     }
 
@@ -426,10 +427,10 @@ public class EventServiceImpl implements EventService {
             statClient.addStats(requestDto);
         }
     }
-    private EventFullDto getEventFullDto(Event event) {
+
+    private EventFullDto setConfirmedRequest(Event event) {
         Integer confirmed = requestRepository.findRequestByEventAndStatus(event.getId(), RequestStatus.CONFIRMED).size();
         EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(event));
-        System.out.println(confirmed);
         eventFullDto.setConfirmedRequests((long) confirmed);
         return eventFullDto;
     }
