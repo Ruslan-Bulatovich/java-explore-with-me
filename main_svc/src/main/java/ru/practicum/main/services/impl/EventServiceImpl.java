@@ -238,7 +238,7 @@ public class EventServiceImpl implements EventService {
         }
         List<EventFullDto> eventFullDtoList;
         eventFullDtoList = events.stream().map(this::setConfirmedRequest).collect(Collectors.toList());
-        setView(events);
+        setView(eventFullDtoList);
         return eventFullDtoList;
     }
 
@@ -303,16 +303,14 @@ public class EventServiceImpl implements EventService {
         if (sort != null) {
             if (sort.equals(SortValue.EVENT_DATE)) {
                 events = events.stream().sorted(Comparator.comparing(Event::getEventDate)).collect(Collectors.toList());
-            } else {
-                events = events.stream().sorted(Comparator.comparing(Event::getViews)).collect(Collectors.toList());
             }
         }
 
         if (events.size() == 0) {
             return new ArrayList<>();
         }
-        /// нужно вставить в окончательный лист количество потвержденных запросов
-        setView(events);
+        List<EventFullDto> eventFullDto = eventMapper.toEventFullDtoList(events);
+        setView(eventFullDto);
         sendStat(events, ip, uri);
         return eventMapper.toEventFullDtoList(events);
     }
@@ -320,13 +318,13 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventFullDto getEvent(Long id, String ip, String uri) {
         Event event = eventRepository.findByIdAndPublishedOnIsNotNull(id).orElseThrow(() -> new EventNotExistException(String.format("Can't find event with id = %s event doesn't exist", id)));
-        event.setViews(setView(event));
-        sendStat(event, ip, uri);
         EventFullDto eventFullDto = setConfirmedRequest(event);
+        sendStat(eventFullDto, ip, uri);
+        eventFullDto.setViews(setView(eventFullDto));
         return eventFullDto;
     }
 
-    public void sendStat(Event event, String ip, String uri) {
+    public void sendStat(EventFullDto event, String ip, String uri) {
         LocalDateTime now = LocalDateTime.now();
         String remoteAddr = ip;
         String nameService = "main-service";
@@ -354,14 +352,15 @@ public class EventServiceImpl implements EventService {
         sendStatForEveryEvent(events, remoteAddr, LocalDateTime.now(), nameService);
     }
 
-    public void setView(List<Event> events) {
-        LocalDateTime start = events.get(0).getCreatedOn();
+    public void setView(List<EventFullDto> events) {
+        LocalDateTime start =  LocalDateTime.parse(events.get(0).getCreatedOn(), dateFormatter);
         List<String> uris = new ArrayList<>();
-        Map<String, Event> eventsUri = new HashMap<>();
+        Map<String, EventFullDto> eventsUri = new HashMap<>();
         String uri = "";
-        for (Event event : events) {
-            if (start.isBefore(event.getCreatedOn())) {
-                start = event.getCreatedOn();
+        for (EventFullDto event : events) {
+            LocalDateTime createdOn =  LocalDateTime.parse(events.get(0).getCreatedOn());
+            if (start.isBefore(createdOn)) {
+                start = createdOn;
             }
             uri = "/events/" + event.getId();
             uris.add(uri);
@@ -377,10 +376,10 @@ public class EventServiceImpl implements EventService {
                 eventsUri.get(stat.getUri()).setViews(stat.getHits()));
     }
 
-    public Long setView(Event event) {
-        String startTime = event.getCreatedOn().format(dateFormatter);
+    public Long setView(EventFullDto eventFullDto) {
+        String startTime = eventFullDto.getCreatedOn();
         String endTime = LocalDateTime.now().format(dateFormatter);
-        List<String> uris = List.of("/events/" + event.getId());
+        List<String> uris = List.of("/events/" + eventFullDto.getId());
 
         List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
         if (stats.size() == 1) {

@@ -9,6 +9,7 @@ import ru.practicum.main.enums.EventState;
 import ru.practicum.main.services.EventService;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController

@@ -25,5 +25,5 @@ public interface EventService {
 
     EventFullDto getEvent(Long id, String ip, String uri);
 
-    void setView(List<Event> events);
+    void setView(List<EventFullDto> events);
 }

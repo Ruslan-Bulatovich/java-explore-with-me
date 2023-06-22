@@ -53,7 +53,6 @@ create table if not exists events
     request_Moderation boolean,
     state              varchar(120),
     title              varchar(120),
-    views              bigint,
     constraint PK_EVENT
         primary key (ID),
     constraint EVENTS_CATEGORIES_ID_FK

@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service;
 import ru.practicum.main.dto.compilation.CompilationDto;
 import ru.practicum.main.dto.compilation.NewCompilationDto;
 import ru.practicum.main.dto.compilation.UpdateCompilationRequest;
+import ru.practicum.main.dto.event.EventFullDto;
 import ru.practicum.main.exceptions.CompilationNotExistException;
 import ru.practicum.main.mappers.CompilationMapper;
+import ru.practicum.main.mappers.EventMapper;
 import ru.practicum.main.models.Compilation;
 import ru.practicum.main.models.Event;
 import ru.practicum.main.repositories.CompilationRepository;
@@ -37,6 +39,7 @@ public class CompilationServiceImpl implements CompilationService {
     private final EntityManager entityManager;
     private final CompilationRepository compilationRepository;
     private final CompilationMapper mapper;
+    private final EventMapper eventMapper;
 
     @Override
     @Transactional
@@ -121,10 +124,10 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     private void setView(Compilation compilation) {
-        Set<Event> setEvents = compilation.getEvents();
-        if (!setEvents.isEmpty()) {
-            List<Event> events = new ArrayList<>(setEvents);
-            eventService.setView(events);
+        List<Event> events = new ArrayList<>(compilation.getEvents());
+        List<EventFullDto> eventFullDtoList = eventMapper.toEventFullDtoList(events);
+        if (!eventFullDtoList.isEmpty()) {
+            eventService.setView(eventFullDtoList);
         }
     }
 }
