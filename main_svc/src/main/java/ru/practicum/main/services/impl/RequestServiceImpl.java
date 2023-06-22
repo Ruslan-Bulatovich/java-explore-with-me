@@ -120,6 +120,6 @@ public class RequestServiceImpl implements RequestService {
         return requestMapper.toRequestDto(requestRepository.save(request));
     }
     private Integer getConfirmedRequests(Event event) {
-        return requestRepository.findRequestByEventAndStatus(event.getId(), "CONFIRMED").size();
+        return requestRepository.findRequestByEventAndStatus(event.getId(), RequestStatus.CONFIRMED).size();
     }
 }

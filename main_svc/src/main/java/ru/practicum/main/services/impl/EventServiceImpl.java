@@ -9,10 +9,7 @@ import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.main.constants.Pattern;
 import ru.practicum.main.dto.event.*;
-import ru.practicum.main.enums.EventState;
-import ru.practicum.main.enums.SortValue;
-import ru.practicum.main.enums.StateActionForAdmin;
-import ru.practicum.main.enums.StateActionForUser;
+import ru.practicum.main.enums.*;
 import ru.practicum.main.exceptions.*;
 import ru.practicum.main.mappers.EventMapper;
 import ru.practicum.main.models.Category;
@@ -298,7 +295,7 @@ public class EventServiceImpl implements EventService {
 
         if (onlyAvailable) {
             events = events.stream()
-                    .filter((event -> requestRepository.findRequestByEventAndStatus(event.getId(), "CONFIRMED").size() < (long) event.getParticipantLimit()))
+                    .filter((event -> requestRepository.findRequestByEventAndStatus(event.getId(), RequestStatus.CONFIRMED).size() < (long) event.getParticipantLimit()))
                     .collect(Collectors.toList());
         }
 
@@ -430,8 +427,9 @@ public class EventServiceImpl implements EventService {
         }
     }
     private EventFullDto getEventFullDto(Event event) {
-        Integer confirmed = requestRepository.findRequestByEventAndStatus(event.getId(), "CONFIRMED").size();
+        Integer confirmed = requestRepository.findRequestByEventAndStatus(event.getId(), RequestStatus.CONFIRMED).size();
         EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(event));
+        System.out.println(confirmed);
         eventFullDto.setConfirmedRequests((long) confirmed);
         return eventFullDto;
     }
