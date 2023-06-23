@@ -137,4 +137,11 @@ public class ErrorHandler {
     public ErrorResponse handleCategoryNotExistException(final CategoryNotExistException exception) {
         return new ErrorResponse(exception.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleWrongDataOfEventException(final WrongDataException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
 }

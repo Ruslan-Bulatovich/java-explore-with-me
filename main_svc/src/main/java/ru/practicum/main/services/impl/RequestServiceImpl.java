@@ -49,9 +49,9 @@ public class RequestServiceImpl implements RequestService {
             throw new EventIsNotPublishedException("Event is not published yet");
         }
 
-        List<Request> requests = requestRepository.findAllByEvent(eventId);
+        Integer confirmedRequests = requestRepository.findRequestByEventAndStatus(event.getId(), RequestStatus.CONFIRMED).size();
 
-        if (!event.getRequestModeration() && requests.size() >= event.getParticipantLimit()) {
+        if (!event.getRequestModeration() && confirmedRequests >= event.getParticipantLimit()) {
             throw new ParticipantLimitException("Member limit exceeded ");
         }
         Request request = new Request();
@@ -73,7 +73,7 @@ public class RequestServiceImpl implements RequestService {
         RequestStatusUpdateResult result = new RequestStatusUpdateResult();
 
         if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
-            return result;
+            throw new WrongDataException("Нет доступа или количество заявок равно 0");
         }
 
         List<Request> requests = requestRepository.findAllByEventWithInitiator(userId, eventId);
@@ -92,7 +92,6 @@ public class RequestServiceImpl implements RequestService {
         }
 
         requestRepository.saveAll(requestsToUpdate);
-
 
         eventRepository.save(event);
 

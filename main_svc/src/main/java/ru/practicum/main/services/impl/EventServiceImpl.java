@@ -193,9 +193,9 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventFullDto> getEventsWithParamsByAdmin(List<Long> users, EventState states, List<Long> categoriesId, String rangeStart, String rangeEnd, Integer from, Integer size) {
-        LocalDateTime start = rangeStart != null ? LocalDateTime.parse(rangeStart, dateFormatter) : null;
-        LocalDateTime end = rangeEnd != null ? LocalDateTime.parse(rangeEnd, dateFormatter) : null;
+    public List<EventFullDto> getEventsWithParamsByAdmin(List<Long> users, EventState states, List<Long> categoriesId, LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size) {
+        LocalDateTime start = rangeStart != null ? rangeStart : null;
+        LocalDateTime end = rangeEnd != null ? rangeEnd : null;
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Event> query = builder.createQuery(Event.class);
@@ -353,12 +353,12 @@ public class EventServiceImpl implements EventService {
     }
 
     public void setView(List<EventFullDto> events) {
-        LocalDateTime start =  LocalDateTime.parse(events.get(0).getCreatedOn());
+        LocalDateTime start = LocalDateTime.parse(events.get(0).getCreatedOn());
         List<String> uris = new ArrayList<>();
         Map<String, EventFullDto> eventsUri = new HashMap<>();
         String uri = "";
         for (EventFullDto event : events) {
-            LocalDateTime createdOn =  LocalDateTime.parse(events.get(0).getCreatedOn());
+            LocalDateTime createdOn = LocalDateTime.parse(events.get(0).getCreatedOn());
             if (start.isBefore(createdOn)) {
                 start = createdOn;
             }
@@ -367,62 +367,17 @@ public class EventServiceImpl implements EventService {
             eventsUri.put(uri, event);
             event.setViews(0L);
         }
-
         String startTime = start.format(DateTimeFormatter.ofPattern(Pattern.DATE));
         String endTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Pattern.DATE));
-        ////////////////
         List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
         stats.forEach((stat) ->
                 eventsUri.get(stat.getUri()).setViews(stat.getHits()));
     }
-/*
+
     public Long setView(Event event) {
+
         String startTime = event.getCreatedOn().format(dateFormatter);
         String endTime = LocalDateTime.now().format(dateFormatter);
-        List<String> uris = List.of("/events/" + event.getId());
-
-        List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
-        if (stats.size() == 1) {
-            return stats.get(0).getHits();
-        } else {
-            return 1L;
-        }
-            public Long setView(EventFullDto eventFullDto) {
-        //"yyyy-MM-dd HH:mm:ss";
-        System.out.println(eventFullDto.getId());
-        System.out.println(eventFullDto.getCreatedOn());
-        System.out.println(eventFullDto.getId());
-        //LocalDateTime start = LocalDateTime.parse(eventFullDto.getCreatedOn(), dateFormatter);
-        String startTime = eventFullDto.getCreatedOn();
-        String endTime = LocalDateTime.now().format(dateFormatter);
-        ////////////
-        System.out.println(startTime);
-        System.out.println(eventFullDto.getId());
-        System.out.println(endTime);
-
-        List<String> uris = List.of("/events/" + eventFullDto.getId());
-        List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
-        if (stats.size() == 1) {
-            return stats.get(0).getHits();
-        } else {
-            return 1L;
-        }
-    }
-    }
- */
-    public Long setView(Event event) {
-        //"yyyy-MM-dd HH:mm:ss";
-        System.out.println(event.getId());
-        System.out.println(event.getCreatedOn());
-        System.out.println(event.getId());
-        //LocalDateTime start = LocalDateTime.parse(eventFullDto.getCreatedOn(), dateFormatter);
-        String startTime = event.getCreatedOn().format(dateFormatter);
-        String endTime = LocalDateTime.now().format(dateFormatter);
-        ////////////
-        System.out.println(startTime);
-        System.out.println(event.getId());
-        System.out.println(endTime);
-
         List<String> uris = List.of("/events/" + event.getId());
         List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
         if (stats.size() == 1) {
