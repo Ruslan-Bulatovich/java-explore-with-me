@@ -320,7 +320,7 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findByIdAndPublishedOnIsNotNull(id).orElseThrow(() -> new EventNotExistException(String.format("Can't find event with id = %s event doesn't exist", id)));
         EventFullDto eventFullDto = setConfirmedRequest(event);
         sendStat(eventFullDto, ip, uri);
-        eventFullDto.setViews(setView(eventFullDto));
+        eventFullDto.setViews(setView(event));
         return eventFullDto;
     }
 
@@ -371,14 +371,28 @@ public class EventServiceImpl implements EventService {
         String startTime = start.format(DateTimeFormatter.ofPattern(Pattern.DATE));
         String endTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Pattern.DATE));
         ////////////////
-        System.out.println(startTime);
-        System.out.println(endTime);
         List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
         stats.forEach((stat) ->
                 eventsUri.get(stat.getUri()).setViews(stat.getHits()));
     }
+/*
+    public Long setView(Event event) {
+        String startTime = event.getCreatedOn().format(dateFormatter);
+        String endTime = LocalDateTime.now().format(dateFormatter);
+        List<String> uris = List.of("/events/" + event.getId());
 
-    public Long setView(EventFullDto eventFullDto) {
+        List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
+        if (stats.size() == 1) {
+            return stats.get(0).getHits();
+        } else {
+            return 1L;
+        }
+            public Long setView(EventFullDto eventFullDto) {
+        //"yyyy-MM-dd HH:mm:ss";
+        System.out.println(eventFullDto.getId());
+        System.out.println(eventFullDto.getCreatedOn());
+        System.out.println(eventFullDto.getId());
+        //LocalDateTime start = LocalDateTime.parse(eventFullDto.getCreatedOn(), dateFormatter);
         String startTime = eventFullDto.getCreatedOn();
         String endTime = LocalDateTime.now().format(dateFormatter);
         ////////////
@@ -387,6 +401,29 @@ public class EventServiceImpl implements EventService {
         System.out.println(endTime);
 
         List<String> uris = List.of("/events/" + eventFullDto.getId());
+        List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
+        if (stats.size() == 1) {
+            return stats.get(0).getHits();
+        } else {
+            return 1L;
+        }
+    }
+    }
+ */
+    public Long setView(Event event) {
+        //"yyyy-MM-dd HH:mm:ss";
+        System.out.println(event.getId());
+        System.out.println(event.getCreatedOn());
+        System.out.println(event.getId());
+        //LocalDateTime start = LocalDateTime.parse(eventFullDto.getCreatedOn(), dateFormatter);
+        String startTime = event.getCreatedOn().format(dateFormatter);
+        String endTime = LocalDateTime.now().format(dateFormatter);
+        ////////////
+        System.out.println(startTime);
+        System.out.println(event.getId());
+        System.out.println(endTime);
+
+        List<String> uris = List.of("/events/" + event.getId());
         List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
         if (stats.size() == 1) {
             return stats.get(0).getHits();
