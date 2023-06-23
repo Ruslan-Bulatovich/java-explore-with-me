@@ -353,7 +353,7 @@ public class EventServiceImpl implements EventService {
     }
 
     public void setView(List<EventFullDto> events) {
-        LocalDateTime start =  LocalDateTime.parse(events.get(0).getCreatedOn(), dateFormatter);
+        LocalDateTime start =  LocalDateTime.parse(events.get(0).getCreatedOn());
         List<String> uris = new ArrayList<>();
         Map<String, EventFullDto> eventsUri = new HashMap<>();
         String uri = "";
@@ -370,7 +370,9 @@ public class EventServiceImpl implements EventService {
 
         String startTime = start.format(DateTimeFormatter.ofPattern(Pattern.DATE));
         String endTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(Pattern.DATE));
-
+        ////////////////
+        System.out.println(startTime);
+        System.out.println(endTime);
         List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
         stats.forEach((stat) ->
                 eventsUri.get(stat.getUri()).setViews(stat.getHits()));
@@ -379,8 +381,12 @@ public class EventServiceImpl implements EventService {
     public Long setView(EventFullDto eventFullDto) {
         String startTime = eventFullDto.getCreatedOn();
         String endTime = LocalDateTime.now().format(dateFormatter);
-        List<String> uris = List.of("/events/" + eventFullDto.getId());
+        ////////////
+        System.out.println(startTime);
+        System.out.println(eventFullDto.getId());
+        System.out.println(endTime);
 
+        List<String> uris = List.of("/events/" + eventFullDto.getId());
         List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
         if (stats.size() == 1) {
             return stats.get(0).getHits();
