@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.practicum.main.enums.RequestStatus;
+import ru.practicum.main.models.Event;
 import ru.practicum.main.models.Request;
 
 import java.util.List;
@@ -12,19 +13,19 @@ import java.util.Optional;
 
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
-    @Query("select p from Request as p " +
-            "join Event as e ON p.event = e.id " +
-            "where p.event = :eventId and e.initiator.id = :userId")
-    List<Request> findAllByEventWithInitiator(@Param(value = "userId") Long userId,
-                                              @Param("eventId") Long eventId);
 
-    Boolean existsByRequesterAndEvent(Long userId, Long eventId);
+    @Query("SELECT r FROM Request r " +
+            "WHERE r.event.initiator.id = :userId")
+    List<Request> findByEventInitiatorId(@Param(value = "userId") Long userId);
 
-    List<Request> findAllByRequester(Long userId);
+    Boolean existsByRequesterIdAndEventId(Long userId, Long eventId);
 
-    List<Request> findAllByEvent(Long eventId);
+    List<Request> findAllByRequesterId(Long userId);
 
-    Optional<Request> findByRequesterAndId(Long userId, Long requestId);
+    Optional<Request> findByRequesterIdAndId(Long userId, Long requestId);
 
-    List<Request> findRequestByEventAndStatus(Long eventId, RequestStatus status);
+    Integer countByEventIdAndStatus(Long eventId, RequestStatus status);
+
+    List<Request> findAllByEventInAndStatus(List<Event> events, RequestStatus status);
+
 }

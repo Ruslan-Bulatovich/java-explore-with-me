@@ -236,8 +236,11 @@ public class EventServiceImpl implements EventService {
         if (events.size() == 0) {
             return new ArrayList<>();
         }
-        List<EventFullDto> eventFullDtoList;
-        eventFullDtoList = events.stream().map(this::setConfirmedRequest).collect(Collectors.toList());
+        List<EventFullDto> eventFullDtoList = eventMapper.toEventFullDtoList(events);
+        Map<Long, Long> confirmedRequests = getConfirmedRequestsList(events);
+        for (EventFullDto dto : eventFullDtoList) {
+            dto.setConfirmedRequests(confirmedRequests.getOrDefault(dto.getId(), 0L));
+        }
         setView(eventFullDtoList);
         return eventFullDtoList;
     }
@@ -294,25 +297,29 @@ public class EventServiceImpl implements EventService {
                 .setMaxResults(size)
                 .getResultList();
 
-        if (onlyAvailable) {
-            events = events.stream()
-                    .filter((event -> requestRepository.findRequestByEventAndStatus(event.getId(), RequestStatus.CONFIRMED).size() < (long) event.getParticipantLimit()))
-                    .collect(Collectors.toList());
-        }
-
-        if (sort != null) {
-            if (sort.equals(SortValue.EVENT_DATE)) {
-                events = events.stream().sorted(Comparator.comparing(Event::getEventDate)).collect(Collectors.toList());
-            }
-        }
-
         if (events.size() == 0) {
             return new ArrayList<>();
         }
-        List<EventFullDto> eventFullDto = eventMapper.toEventFullDtoList(events);
-        setView(eventFullDto);
+        List<EventFullDto> eventFullDtoList = eventMapper.toEventFullDtoList(events);
+        Map<Long, Long> confirmedRequests = getConfirmedRequestsList(events);
+        for (EventFullDto dto : eventFullDtoList) {
+            dto.setConfirmedRequests(confirmedRequests.getOrDefault(dto.getId(), 0L));
+        }
+        setView(eventFullDtoList);
+        if (onlyAvailable) {
+            eventFullDtoList = eventFullDtoList.stream()
+                    .filter((eventFullDto -> eventFullDto.getConfirmedRequests() < (long) eventFullDto.getParticipantLimit()))
+                    .collect(Collectors.toList());
+        }
+        if (sort != null) {
+            if (sort.equals(SortValue.EVENT_DATE)) {
+                eventFullDtoList = eventFullDtoList.stream().sorted(Comparator.comparing(EventFullDto::getEventDate)).collect(Collectors.toList());
+            } else {
+                eventFullDtoList = eventFullDtoList.stream().sorted(Comparator.comparing(EventFullDto::getViews)).collect(Collectors.toList());
+            }
+        }
         sendStat(events, ip, uri);
-        return eventMapper.toEventFullDtoList(events);
+        return eventFullDtoList;
     }
 
     @Override
@@ -349,7 +356,6 @@ public class EventServiceImpl implements EventService {
         requestDto.setApp(nameService);
         requestDto.setIp(ip);
         statClient.addStats(requestDto);
-        sendStatForEveryEvent(events, remoteAddr, LocalDateTime.now(), nameService);
     }
 
     public void setView(List<EventFullDto> events) {
@@ -413,22 +419,25 @@ public class EventServiceImpl implements EventService {
         statClient.addStats(requestDto);
     }
 
-    private void sendStatForEveryEvent(List<Event> events, String remoteAddr, LocalDateTime now,
-                                       String nameService) {
-        for (Event event : events) {
-            EndpointHitDto requestDto = new EndpointHitDto();
-            requestDto.setTimestamp(now.format(dateFormatter));
-            requestDto.setUri("/events/" + event.getId());
-            requestDto.setApp(nameService);
-            requestDto.setIp(remoteAddr);
-            statClient.addStats(requestDto);
-        }
-    }
-
     private EventFullDto setConfirmedRequest(Event event) {
-        Integer confirmed = requestRepository.findRequestByEventAndStatus(event.getId(), RequestStatus.CONFIRMED).size();
+        Integer confirmed = requestRepository.countByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED);
         EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(event));
         eventFullDto.setConfirmedRequests((long) confirmed);
         return eventFullDto;
+    }
+
+    private Map<Long, Long> getConfirmedRequestsList(List<Event> events) {
+        List<Event> publishedEvents = getPublished(events);
+
+        Map<Long, Long> confirmedRequests = requestRepository.findAllByEventInAndStatus(publishedEvents, RequestStatus.CONFIRMED)
+                .stream()
+                .collect(Collectors.groupingBy(eventRequest -> eventRequest.getEvent().getId(), Collectors.counting()));
+        return confirmedRequests;
+    }
+
+    private List<Event> getPublished(List<Event> events) {
+        return events.stream()
+                .filter(event -> event.getPublishedOn() != null)
+                .collect(Collectors.toList());
     }
 }
