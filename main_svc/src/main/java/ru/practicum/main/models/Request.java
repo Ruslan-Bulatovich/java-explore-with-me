@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import ru.practicum.main.enums.RequestStatus;
 
 import javax.persistence.*;
@@ -22,8 +24,14 @@ public class Request {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private LocalDateTime created;
-    private Long event;
-    private Long requester;
+    @ManyToOne
+    @JoinColumn(name = "event")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    Event event;
+    @ManyToOne
+    @JoinColumn(name = "requester")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    User requester;
     @Enumerated(EnumType.STRING)
     private RequestStatus status;
 

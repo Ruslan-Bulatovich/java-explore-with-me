@@ -26,11 +26,11 @@ public class PublicEventController {
                                                         @RequestParam(name = "from", required = false, defaultValue = "0") Integer from,
                                                         @RequestParam(name = "size", required = false, defaultValue = "10") Integer size,
                                                         HttpServletRequest request) {
-        return eventService.getEventsWithParamsByUser(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, request);
+        return eventService.getEventsWithParamsByUser(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, request.getRemoteAddr(), request.getRequestURI());
     }
 
     @GetMapping("/{id}")
     public EventFullDto getEvent(@PathVariable Long id, HttpServletRequest request) {
-        return eventService.getEvent(id, request);
+        return eventService.getEvent(id, request.getRemoteAddr(), request.getRequestURI());
     }
 }
