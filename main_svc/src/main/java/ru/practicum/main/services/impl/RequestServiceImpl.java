@@ -121,7 +121,7 @@ public class RequestServiceImpl implements RequestService {
         return requestMapper.toRequestDto(requestRepository.save(request));
     }
 
-    List<Request> getParticipationRequests(Long userId, Long eventId) {
+    private List<Request> getParticipationRequests(Long userId, Long eventId) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotExistException("Event doesnt exist"));
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotExistException("User doesnt exist"));
         if (!user.getId().equals(event.getInitiator().getId())) {

@@ -50,6 +50,15 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    public CommentDto updateCommentByAdmin(NewCommentDto newCommentDto, Long commentId) {
+        Comment oldComment = commentsRepository.findById(commentId).orElseThrow(() -> new CommentNotExistException("Can't update comment, comment doesn't exist"));
+        oldComment.setText(newCommentDto.getText());
+        Comment savedComment = commentsRepository.save(oldComment);
+        log.debug("Comment with ID = {} was update", commentId);
+        return commentMapper.toCommentDto(savedComment);
+    }
+
+    @Override
     @Transactional
     public CommentDto updateCommentByUser(NewCommentDto newCommentDto, Long userId, Long commentId) {
         Comment oldComment = commentsRepository.findById(commentId).orElseThrow(() -> new CommentNotExistException("Can't update comment, comment doesn't exist"));
@@ -59,15 +68,6 @@ public class CommentServiceImpl implements CommentService {
         if (!oldComment.getAuthor().getId().equals(userId)) {
             throw new CommentConflictException("Can't delete comment, if his owner another user");
         }
-        oldComment.setText(newCommentDto.getText());
-        Comment savedComment = commentsRepository.save(oldComment);
-        log.debug("Comment with ID = {} was update", commentId);
-        return commentMapper.toCommentDto(savedComment);
-    }
-
-    @Override
-    public CommentDto updateCommentByAdmin(NewCommentDto newCommentDto, Long commentId) {
-        Comment oldComment = commentsRepository.findById(commentId).orElseThrow(() -> new CommentNotExistException("Can't update comment, comment doesn't exist"));
         oldComment.setText(newCommentDto.getText());
         Comment savedComment = commentsRepository.save(oldComment);
         log.debug("Comment with ID = {} was update", commentId);

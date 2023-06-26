@@ -27,11 +27,11 @@ public class Request {
     @ManyToOne
     @JoinColumn(name = "event")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    Event event;
+    private Event event;
     @ManyToOne
     @JoinColumn(name = "requester")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    User requester;
+    private User requester;
     @Enumerated(EnumType.STRING)
     private RequestStatus status;
 
