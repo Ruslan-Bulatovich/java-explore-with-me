@@ -137,6 +137,7 @@ public class ErrorHandler {
     public ErrorResponse handleCategoryNotExistException(final CategoryNotExistException exception) {
         return new ErrorResponse(exception.getMessage());
     }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
