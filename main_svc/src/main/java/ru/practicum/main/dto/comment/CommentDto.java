@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.practicum.main.constants.Pattern;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 @Getter
@@ -13,6 +15,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class CommentDto {
     private Long id;
+    @NotBlank
+    @Max(250)
     private String text;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Pattern.DATE)
     private LocalDateTime created;

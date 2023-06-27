@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import ru.practicum.main.models.Event;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,4 +21,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     Boolean existsByCategoryId(Long catId);
 
     Optional<Event> findByIdAndPublishedOnIsNotNull(Long id);
+    Boolean existsByEventDateBefore(LocalDateTime t);
+
 }

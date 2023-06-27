@@ -8,6 +8,8 @@ import ru.practicum.main.enums.RequestStatus;
 import ru.practicum.main.models.Event;
 import ru.practicum.main.models.Request;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,4 +30,5 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     List<Request> findAllByEventInAndStatus(List<Event> events, RequestStatus status);
 
+    Boolean existsByEventIdAndRequesterIdAndStatusAndEvent_EventDateBefore(Long eventId, Long userId, RequestStatus status, LocalDateTime time);
 }

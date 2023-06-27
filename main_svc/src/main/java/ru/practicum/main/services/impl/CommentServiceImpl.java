@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.main.dto.comment.CommentDto;
 import ru.practicum.main.dto.comment.NewCommentDto;
+import ru.practicum.main.enums.RequestStatus;
 import ru.practicum.main.exceptions.*;
 import ru.practicum.main.mappers.CommentMapper;
 import ru.practicum.main.models.Comment;
@@ -14,6 +15,7 @@ import ru.practicum.main.models.Event;
 import ru.practicum.main.models.User;
 import ru.practicum.main.repositories.CommentsRepository;
 import ru.practicum.main.repositories.EventRepository;
+import ru.practicum.main.repositories.RequestRepository;
 import ru.practicum.main.repositories.UserRepository;
 import ru.practicum.main.services.CommentService;
 
@@ -33,6 +35,7 @@ public class CommentServiceImpl implements CommentService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final CommentsRepository commentsRepository;
+    private final RequestRepository requestRepository;
     private final CommentMapper commentMapper;
     private final EntityManager entityManager;
 
@@ -40,7 +43,10 @@ public class CommentServiceImpl implements CommentService {
     public CommentDto createComment(NewCommentDto newCommentDto, Long userId, Long eventId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotExistException(String.format("Can't create comment, user with id=%s doesn't exist", userId)));
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotExistException(String.format("Can't create comment, event with id=%s doesn't exist", eventId)));
-
+        Boolean isPossibleComment = requestRepository.existsByEventIdAndRequesterIdAndStatusAndEvent_EventDateBefore(eventId,userId, RequestStatus.CONFIRMED,LocalDateTime.now());
+        if(!isPossibleComment){
+            throw new CommentConflictException("Комментарий невозможно добавить, пользователь не был на событии.");
+        }
         Comment comment = new Comment();
         comment.setAuthor(user);
         comment.setEvent(event);
