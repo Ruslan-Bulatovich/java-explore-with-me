@@ -127,6 +127,6 @@ public class RequestServiceImpl implements RequestService {
         if (!user.getId().equals(event.getInitiator().getId())) {
             throw new WrongDataException("Пользователь " + userId + " не инициатор события " + eventId);
         }
-        return requestRepository.findByEventInitiatorId(userId);
+        return requestRepository.findAllByEvent_Initiator_Id(userId);
     }
 }
