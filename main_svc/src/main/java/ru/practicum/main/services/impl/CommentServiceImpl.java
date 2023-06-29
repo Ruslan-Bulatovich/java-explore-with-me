@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.main.dto.comment.CommentDto;
 import ru.practicum.main.dto.comment.NewCommentDto;
-import ru.practicum.main.enums.RequestStatus;
 import ru.practicum.main.exceptions.*;
 import ru.practicum.main.mappers.CommentMapper;
 import ru.practicum.main.models.Comment;
@@ -43,10 +42,6 @@ public class CommentServiceImpl implements CommentService {
     public CommentDto createComment(NewCommentDto newCommentDto, Long userId, Long eventId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotExistException(String.format("Can't create comment, user with id=%s doesn't exist", userId)));
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotExistException(String.format("Can't create comment, event with id=%s doesn't exist", eventId)));
-        Boolean isPossibleComment = requestRepository.existsByEventIdAndRequesterIdAndStatusAndEvent_EventDateBefore(eventId, userId, RequestStatus.CONFIRMED, LocalDateTime.now().plusHours(4));
-        if (!isPossibleComment) {
-            throw new CommentConflictException("Комментарий невозможно добавить, пользователь не был на событии.");
-        }
         Comment comment = new Comment();
         comment.setAuthor(user);
         comment.setEvent(event);
