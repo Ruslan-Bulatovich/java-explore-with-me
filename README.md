@@ -1,6 +1,6 @@
 # *Java-explore-with-me*
 
-[ссылка на pull request #1](https://github.com/Ruslan-Bulatovich/java-explore-with-me/pull/8#issue-1773431654)
+[ссылка на pull request #1](https://github.com/Ruslan-Bulatovich/java-explore-with-me/pull/8#issuecomment-1612490208)
 
 Описание проекта
 -
