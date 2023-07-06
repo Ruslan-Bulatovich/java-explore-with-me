@@ -139,9 +139,15 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleWrongDataOfEventException(final WrongDataException exception) {
+    public ErrorResponse handleUserNameAlreadyExistException(final CommentConflictException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleCommentNotExistException(final CommentNotExistException exception) {
         return new ErrorResponse(exception.getMessage());
     }
 }
